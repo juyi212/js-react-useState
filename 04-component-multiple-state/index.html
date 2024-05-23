@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    /**
+     * 4) 하나의 컴포넌트 안에 여러개의 state가 있는 경우
+     * 하나의 컴포넌트 내부에서 여러개의 state가 변경될 때, 여러번의 rendering 이 일어남 === 비효율적
+     */
+    let idx = 0;
+    let states = [];
+
+    function useState(initialState) {
+      const key = idx;
+      if (states.length === key) {
+        states.push(initialState);
+      }
+      const state = states[key];
+
+      const setState = (newState) => {
+        if (JSON.stringify(states[key]) !== JSON.stringify(newState)) {
+          states[key] = newState;
+          render();
+        }
+      };
+
+      idx += 1;
+      return [state, setState];
+    }
+
+    function Counter() {
+      const [count, setCount] = useState(1);
+
+      window.increment = () => setCount(1);
+
+      return `
+        <div>
+          <strong>count: ${count} </strong>
+          <button onclick="increment()">증가</button>
+        </div>
+      `;
+    }
+
+    function DogAndCat() {
+      const [count, setCount] = useState(1);
+      const [dog, setDog] = useState("나는 강아지");
+      const [cat, setCat] = useState("나는 고양이");
+
+      function multiBark(newCount) {
+        setCount(newCount);
+        setDog("멍멍".repeat(newCount));
+        setCat("야옹".repeat(newCount));
+      }
+
+      window.increment = () => multiBark(count + 1);
+      window.decrement = () => multiBark(count - 1);
+
+      return `
+        <div>
+          <div>count: ${count} </div>
+          <div>dog: ${dog} </div>
+          <div>cat: ${cat} </div>
+          <button onclick="increment()"> 증가 </button>
+          <button onclick="decrement()"> 감소 </button>
+        </div>
+      `;
+    }
+
+    let renderCount = 0;
+    const render = () => {
+      const $app = document.querySelector("#app");
+      $app.innerHTML = `
+        ${renderCount}
+        ${DogAndCat()}
+      `;
+      renderCount += 1;
+      idx = 0;
+    };
+    render();
+  </script>
+</html>

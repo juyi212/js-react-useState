@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    /**
+     * 6) Render 추상화
+     */
+
+    function debounceFrame(callback) {
+      let nextFrameCallback = -1;
+
+      // 클로저를 이용하기 위해 debounce를 실행하면 함수를 반환한다.
+      return () => {
+        /**
+         * ex) 증가 버튼을 누르는 순간 render가 3번 일어남
+         * 3번 일어나는 순간을 한 프레임안에 여러개가 있는 경우, 취소하고 새로운걸 실행
+         * 실행이 예약된 함수(callback)이 있을 경우 캔슬한다.
+         */
+        cancelAnimationFrame(nextFrameCallback);
+
+        // 특정 시간 후에 callback이 실행되도록 한다.
+        nextFrameCallback = requestAnimationFrame(callback);
+      };
+    }
+
+    function MyComponent() {
+      const options = {
+        idx: 0,
+        states: [],
+        root: null,
+        rootComponent: null,
+      };
+
+      function useState(initialState) {
+        const { idx: key, states } = options;
+
+        if (states.length === key) {
+          states.push(initialState);
+        }
+        const state = states[key];
+
+        const setState = (newState) => {
+          if (JSON.stringify(states[key]) !== JSON.stringify(newState)) {
+            states[key] = newState;
+            _render();
+          }
+        };
+
+        options.idx += 1;
+        return [state, setState];
+      }
+
+      const _render = debounceFrame(() => {
+        // 실질적으로 rendering을 시킬 때, 여기서 진행
+
+        const { root, rootComponent } = options;
+        if (!root || !rootComponent) return;
+
+        root.innerHTML = rootComponent();
+        options.idx = 0;
+      });
+
+      const render = (rootComponent, root) => {
+        // 처음 화면에 그릴때만 사용
+        options.rootComponent = rootComponent;
+        options.root = root;
+        _render();
+      };
+
+      return { useState, render };
+    }
+
+    function DogAndCat() {
+      const [count, setCount] = useState(1);
+      const [dog, setDog] = useState("나는 강아지");
+      const [cat, setCat] = useState("나는 고양이");
+
+      function multiBark(newCount) {
+        setCount(newCount);
+        setDog("멍멍".repeat(newCount));
+        setCat("야옹".repeat(newCount));
+      }
+
+      window.increment = () => multiBark(count + 1);
+      window.decrement = () => multiBark(count - 1);
+
+      return `
+        <div>
+          <div>count: ${count} </div>
+          <div>dog: ${dog} </div>
+          <div>cat: ${cat} </div>
+          <button onclick="increment()"> 증가 </button>
+          <button onclick="decrement()"> 감소 </button>
+        </div>
+      `;
+    }
+
+    const { useState, render } = MyComponent();
+    const App = () => `
+      <div>
+        ${DogAndCat()}
+      </div>
+    `;
+
+    render(App, document.querySelector("#app"));
+  </script>
+</html>

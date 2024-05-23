@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    /**
+     * 여러개의 state를 가질 경우에는 배열로 따로 관리가 필요하다.
+     * setState 안에서 idx값이 첫 렌더 후 초기값(0)을 바라보고 있음.
+     * useState가 호출되는 시점에 key 값에 idx 값을 저장해둔다.
+     * 지역변수로 선언되는 key값을 바라보고 호출한다.
+     *
+     * + ) 값이 같을 때는 render를 시키지 않는다.
+     */
+    let idx = 0;
+    let states = [];
+
+    function useState(initialState) {
+      const key = idx;
+      if (states.length === key) {
+        states.push(initialState);
+      }
+      const state = states[key];
+
+      const setState = (newState) => {
+        if (JSON.stringify(states[key]) !== JSON.stringify(newState)) {
+          states[key] = newState;
+          render();
+        }
+      };
+
+      idx += 1;
+      return [state, setState];
+    }
+
+    function Counter() {
+      const [count, setCount] = useState(1);
+
+      window.increment = () => setCount(1);
+
+      return `
+        <div>
+          <strong>count: ${count} </strong>
+          <button onclick="increment()">증가</button>
+        </div>
+      `;
+    }
+
+    function Dog() {
+      const [dog, setDog] = useState("나는 강아지");
+
+      window.bark = () => setDog(dog + "멍멍");
+
+      return `
+        <div>
+          <strong>dog: ${dog} </strong>
+          <button onclick="bark()">멍멍! </button>
+        </div>
+      `;
+    }
+
+    function Cat() {
+      const [cat, setCat] = useState("나는 고양이");
+
+      window.mumu = () => setCat(cat + "냐옹");
+
+      return `
+        <div>
+          <strong>dog: ${cat} </strong>
+          <button onclick="mumu()"> 냐옹 ~ </button>
+        </div>
+      `;
+    }
+
+    const render = () => {
+      const $app = document.querySelector("#app");
+      $app.innerHTML = `
+        ${Counter()}
+        ${Dog()}
+        ${Cat()}
+      `;
+
+      idx = 0;
+    };
+    render();
+  </script>
+</html>

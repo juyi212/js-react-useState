@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    let state = undefined;
+    function useState(initialState) {
+      if (state === undefined) {
+        state = initialState;
+      }
+      const setState = (newState) => {
+        state = newState;
+        render();
+      };
+
+      return [state, setState];
+    }
+
+    function Counter() {
+      const [count, setCount] = useState(1);
+
+      window.increment = () => setCount(count + 1);
+
+      return `
+        <div>
+          <strong>count: ${count} </strong>
+          <button onclick="increment()">증가</button>
+        </div>
+      `;
+    }
+
+    function Dog() {
+      const [dog, setDog] = useState("나는 강아지");
+
+      window.bark = () => setDog(dog + "멍멍");
+
+      return `
+        <div>
+          <strong>dog: ${dog} </strong>
+          <button onclick="bark()">멍멍! </button>
+        </div>
+      `;
+    }
+
+    const render = () => {
+      const $app = document.querySelector("#app");
+      $app.innerHTML = `
+        ${Counter()}
+        ${Dog()}
+      `;
+    };
+    render();
+  </script>
+</html>

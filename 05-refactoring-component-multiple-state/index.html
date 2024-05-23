@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    /**
+     * 5) 비효율적인 렌더링을 줄이자
+     */
+    let idx = 0;
+    let states = [];
+
+    function useState(initialState) {
+      const key = idx;
+      if (states.length === key) {
+        states.push(initialState);
+      }
+      const state = states[key];
+
+      const setState = (newState) => {
+        if (JSON.stringify(states[key]) !== JSON.stringify(newState)) {
+          states[key] = newState;
+          render();
+        }
+      };
+
+      idx += 1;
+      return [state, setState];
+    }
+
+    function Counter() {
+      const [count, setCount] = useState(1);
+
+      window.increment = () => setCount(1);
+
+      return `
+        <div>
+          <strong>count: ${count} </strong>
+          <button onclick="increment()">증가</button>
+        </div>
+      `;
+    }
+
+    function DogAndCat() {
+      const [count, setCount] = useState(1);
+      const [dog, setDog] = useState("나는 강아지");
+      const [cat, setCat] = useState("나는 고양이");
+
+      function multiBark(newCount) {
+        setCount(newCount);
+        setDog("멍멍".repeat(newCount));
+        setCat("야옹".repeat(newCount));
+      }
+
+      window.increment = () => multiBark(count + 1);
+      window.decrement = () => multiBark(count - 1);
+
+      return `
+        <div>
+          <div>count: ${count} </div>
+          <div>dog: ${dog} </div>
+          <div>cat: ${cat} </div>
+          <button onclick="increment()"> 증가 </button>
+          <button onclick="decrement()"> 감소 </button>
+        </div>
+      `;
+    }
+
+    function debounceFrame(callback) {
+      let nextFrameCallback = -1;
+
+      // 클로저를 이용하기 위해 debounce를 실행하면 함수를 반환한다.
+      return () => {
+        /**
+         * ex) 증가 버튼을 누르는 순간 render가 3번 일어남
+         * 3번 일어나는 순간을 한 프레임안에 여러개가 있는 경우, 취소하고 새로운걸 실행
+         * 실행이 예약된 함수(callback)이 있을 경우 캔슬한다.
+         */
+        cancelAnimationFrame(nextFrameCallback);
+
+        // 특정 시간 후에 callback이 실행되도록 한다.
+        nextFrameCallback = requestAnimationFrame(callback);
+      };
+    }
+
+    let renderCount = 0;
+    const render = debounceFrame(() => {
+      const $app = document.querySelector("#app");
+      $app.innerHTML = `
+        ${renderCount}
+        ${DogAndCat()}
+      `;
+      renderCount += 1;
+      idx = 0;
+    });
+    render();
+  </script>
+</html>
