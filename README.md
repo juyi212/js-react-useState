@@ -1,4 +1,4 @@
-### Javascript로 useState 만들기
+### Javascript로 React Hook 만들기
 
 useState는 React에서 제공하는 일종의 함수(Hook)이다.
 
