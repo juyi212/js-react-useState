@@ -34,6 +34,7 @@ function MyReact() {
     let hasChange = true;
 
     if (oldDependencies) {
+      // 적어도 하나라도 다른 것이 있는 지 판별
       hasChange = dependencies.some(
         (dep, i) => !Object.is(dep, oldDependencies[i])
       );
